@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 class Calculator extends StatefulWidget {
   const Calculator({Key? key}) : super(key: key);
@@ -9,6 +10,60 @@ class Calculator extends StatefulWidget {
 }
 
 class _CalculatorState extends State<Calculator> {
+  String expression ='';
+  String history = '';
+
+  void clear(String text)
+  {
+    setState(() {
+      expression = '0';
+      history = '0';
+    });
+  }
+
+  void numClick(String text)
+  {
+    setState(() {
+      if(text == '%' || text == '/' || text == '*' || text == '-' || text == '+')
+        {
+          String newString = expression.substring(expression.length - 1);
+          if(newString == '%' || newString == '/' || newString == '*' || newString == '-' || newString == '+')
+            {
+              text = '';
+            }
+        }
+
+      if(text == '.')
+      {
+        if(expression.contains('.')){
+          text = '';
+        }
+        if(expression == '0' || expression == '00')
+          {
+            text = '0' + text;
+          }
+      }
+
+      if(expression == '0' || expression == '00')
+        {
+          expression = '';
+        }
+      expression = expression + text;
+    });
+  }
+
+  void calculate(String text)
+  {
+    var p = Parser();
+    Expression exp = p.parse(expression);
+    ContextModel cm = ContextModel();
+    double result = exp.evaluate(EvaluationType.REAL, cm);
+    setState(() {
+      history = expression;
+      expression = result.toString();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,14 +74,14 @@ class _CalculatorState extends State<Calculator> {
           children: <Widget>[
             Container(
               alignment: Alignment.centerRight,
-              child: Text('5000', style: TextStyle(
+              child: Text('$expression', style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold
               ),),
             ),
             Container(
               alignment: Alignment.centerRight,
-              child: Text('153+78', style: TextStyle(
+              child: Text('$history', style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold
               ),),
@@ -35,50 +90,50 @@ class _CalculatorState extends State<Calculator> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                calcButton(buttonText: 'C'),
-                calcButton(buttonText: '%'),
+                calcButton(buttonText: 'C', callBack: clear),
+                calcButton(buttonText: '%', callBack: numClick),
                 calcButton(buttonText: 'x'),
-                calcButton(buttonText: '/'),
+                calcButton(buttonText: '/', callBack: numClick),
               ],
             ),
             SizedBox(height: 25,),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                calcButton(buttonText: '7'),
-                calcButton(buttonText: '8'),
-                calcButton(buttonText: '9'),
-                calcButton(buttonText: '*'),
+                calcButton(buttonText: '7', callBack: numClick),
+                calcButton(buttonText: '8', callBack: numClick),
+                calcButton(buttonText: '9', callBack: numClick),
+                calcButton(buttonText: '*', callBack: numClick),
               ],
             ),
             SizedBox(height: 25,),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                calcButton(buttonText: '4'),
-                calcButton(buttonText: '5'),
-                calcButton(buttonText: '6'),
-                calcButton(buttonText: '-'),
+                calcButton(buttonText: '4', callBack: numClick),
+                calcButton(buttonText: '5', callBack: numClick),
+                calcButton(buttonText: '6', callBack: numClick),
+                calcButton(buttonText: '-', callBack: numClick),
               ],
             ),
             SizedBox(height: 25,),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                calcButton(buttonText: '1'),
-                calcButton(buttonText: '2'),
-                calcButton(buttonText: '3'),
-                calcButton(buttonText: '+'),
+                calcButton(buttonText: '1', callBack: numClick),
+                calcButton(buttonText: '2', callBack: numClick),
+                calcButton(buttonText: '3', callBack: numClick),
+                calcButton(buttonText: '+', callBack: numClick),
               ],
             ),
             SizedBox(height: 25,),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                calcButton(buttonText: '00'),
-                calcButton(buttonText: '0'),
-                calcButton(buttonText: '.'),
-                calcButton(buttonText: '='),
+                calcButton(buttonText: '00', callBack: numClick),
+                calcButton(buttonText: '0', callBack: numClick),
+                calcButton(buttonText: '.', callBack: numClick),
+                calcButton(buttonText: '=',callBack: calculate ),
               ],
             ),
           ],
@@ -86,13 +141,17 @@ class _CalculatorState extends State<Calculator> {
       ),
     );
   }
-  Widget calcButton({String? buttonText})
+  Widget calcButton({String? buttonText, Function? callBack})
   {
     return IconButton(
-        onPressed: (){},
+        onPressed: ()
+      {
+        callBack!(buttonText);
+      }
+      ,
         icon: Text('$buttonText',
         style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-        )
+        ),
     );
   }
 }
